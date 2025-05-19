@@ -1,4 +1,4 @@
-# MCP Server
+# KurrentDB MCP Server
 Expose stream data to the MCP Client. This is a simple MCP tool to explore data in KurrentDB.
 
 ## Recommended Usage
