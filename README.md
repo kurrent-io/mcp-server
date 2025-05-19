@@ -6,8 +6,12 @@ Expose stream data to the MCP Client. This is a simple MCP tool to explore data 
 - Sequential Thinking MCP for complex tasks
 
 ## Installation
+
+### KurrentDB Setup
 You need to enable --run-projections=all and --start-standard-projections on KurrentDB
 The $streams stream is used to look for available streams.
+
+### MCP Client Setup (Claude or VS Code)
 
 ```json
 {
@@ -24,17 +28,30 @@ The $streams stream is used to look for available streams.
 	    "env": {
              "KURRENTDB_CONNECTION_STRING": "insert kurrentdb connection here"
         }
-      },
-      "sequential-thinking": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-sequential-thinking"
-        ]
       }
     }
   }
 ```
+This configuration file should work in Claude Desktop (https://modelcontextprotocol.io/quickstart/user) and VS Code (.vscode/mcp.json).
+
+### MCP Client Setup (Cursor or Windsurf)
+
+```json
+{
+  "mcpServers": {
+    "kurrentdb": {
+      "command": "python",
+      "args": ["path to mcp-server folder\\server.py"],
+      "env": {
+             "KURRENTDB_CONNECTION_STRING": "insert kurrentdb connection here" 
+         }
+    }
+  }
+}
+```
+This configuration file should work in Cursor (\.cursor\mcp.json) and Windsurf (\.codeium\windsurf\mcp_config.json).
+
+
 ## Overview
 This MCP server is designed to make stream data available to the MCP client. 
 It provides a simple interface for querying and retrieving stream data.
