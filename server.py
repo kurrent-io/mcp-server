@@ -189,69 +189,70 @@ def get_projections_status(projection_name: str) -> str:
 @mcp.prompt()
 def build_application_in_python(user_prompt: str) -> str:
     template = f"""
-        Write a Python CLI Application interface with KurrentDB based on: {user_prompt}
-        
-        # Guidelines:
-        
-        KurrentDB saves every state transition as events in granular streams.        
-        Below are the steps that you need to take to build an application on KurrentDB:
-        
-        - Call Sequential Thinking tool if available.
-        - DO NOT CREATE A UI.  
-        - BE CONCISE & SAVE TOKENS. 
-        - DO NOT PROVIDE A GUIDE or INSTRUCTIONS.
-        
-        1. Break down the application into smaller components  
-        2. Define how the states will change and what events will be generated  
-        3. Define the streams that you need to read from and write to in format stream_name-unique_id. You can then access all streams from this category using '$ce-stream_name'.
-        4. Create a projection or multiple projections for the logic of the application to build the states.  
-        5. Test each projection and fix faulted projection. Only then create more projections.  
-        6. Create a simple command line app to interact with the application in Python.
-        
-        Sample code to read events from streams in Python:
-            from kurrentdbclient import KurrentDBClient, StreamState, NewEvent
-            from esdbclient.exceptions import NotFound
-        
-            esdb_client = KurrentDBClient(
-                uri="esdb://localhost:2113?Tls=false"
-            )
-            events = esdb_client.get_stream(
-                stream_name="stream-name",
-                resolve_links=True,
-            )
-        
-        Every Event has the following important attributes:
-            type: str  
-            data: bytes  
-            metadata: bytes  
-            id: UUID  
-            stream_name: str  
-            stream_position: int  # this is the event number
-        
-        Sample code to write events to stream in Python:
-            from kurrentdbclient import KurrentDBClient, StreamState, NewEvent
-            from kurrentdbclient.exceptions import NotFoundError
-            import json
-        
-            kdb_client = KurrentDBClient(
-                uri="esdb://localhost:2113?Tls=false"
-            )
-            event = NewEvent(
-                type="flight details",
-                data=bytes(json.dumps(flight), 'utf-8'),
-                content_type='application/json',
-                metadata=bytes(json.dumps(metadata), 'utf-8')
-            )
-            kdb_client.append_to_stream(
-                stream_name="flights",
-                events=[event],
-                current_version=StreamState.ANY
-            )
-        
-        --- end of sample code ---
-        
-        7. FIX ANY FAULTED PROJECTIONS.
-    """
+            Write a Python CLI Application interface with KurrentDB based on: {user_prompt}
+
+            # Guidelines:
+
+            KurrentDB saves every state transition as events in granular streams.        
+            Below are the steps that you need to take to build an application on KurrentDB:
+
+            - Call Sequential Thinking tool if available.
+            - DO NOT CREATE A UI.  
+            - BE CONCISE & SAVE TOKENS. 
+            - DO NOT PROVIDE A GUIDE or INSTRUCTIONS.
+
+            1. Break down the application into smaller components  
+            2. Define how the states will change and what events will be generated  
+            3. Define the streams that you need to read from and write to in format stream_name-unique_id. 
+              - You can then access all streams from this category using '$ce-stream_name'. 
+              - Do not use multiple dash - in the stream name (use a maximum of one dash -).        4. Create a projection or multiple projections for the logic of the application to build the states.  
+            5. Test each projection and fix faulted projection. Only then create more projections.  
+            6. Create a simple command line app to interact with the application in Python.
+
+            Sample code to read events from streams in Python:
+                from kurrentdbclient import KurrentDBClient, StreamState, NewEvent
+                from esdbclient.exceptions import NotFound
+
+                esdb_client = KurrentDBClient(
+                    uri="esdb://localhost:2113?Tls=false"
+                )
+                events = esdb_client.get_stream(
+                    stream_name="stream-name",
+                    resolve_links=True,
+                )
+
+            Every Event has the following important attributes:
+                type: str  
+                data: bytes  
+                metadata: bytes  
+                id: UUID  
+                stream_name: str  
+                stream_position: int  # this is the event number
+
+            Sample code to write events to stream in Python:
+                from kurrentdbclient import KurrentDBClient, StreamState, NewEvent
+                from kurrentdbclient.exceptions import NotFoundError
+                import json
+
+                kdb_client = KurrentDBClient(
+                    uri="esdb://localhost:2113?Tls=false"
+                )
+                event = NewEvent(
+                    type="flight details",
+                    data=bytes(json.dumps(flight), 'utf-8'),
+                    content_type='application/json',
+                    metadata=bytes(json.dumps(metadata), 'utf-8')
+                )
+                kdb_client.append_to_stream(
+                    stream_name="flights",
+                    events=[event],
+                    current_version=StreamState.ANY
+                )
+
+            --- end of sample code ---
+
+            7. FIX ANY FAULTED PROJECTIONS.
+        """
     return template
 
 if __name__ == "__main__":
