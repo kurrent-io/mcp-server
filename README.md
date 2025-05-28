@@ -1,5 +1,5 @@
 # KurrentDB MCP Server
-Expose stream data to the MCP Client. This is a simple MCP tool to explore data in KurrentDB.
+ This is a simple MCP server to help you explore data and prototype projections faster on top of KurrentDB.
 
 ## Recommended Usage
 - Claude Desktop
