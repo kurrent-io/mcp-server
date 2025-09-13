@@ -11,7 +11,15 @@
 You need to enable --run-projections=all and --start-standard-projections on KurrentDB
 The $streams stream is used to look for available streams.
 
-### MCP Client Setup (Claude or VS Code)
+### Python Dependencies
+Ensure the packages in `requirements.txt` are installed using pip
+
+### OS Dependencies
+Ensure the `vu` package is installed on your machine where you will be running the MCP Server
+
+For Mac: `brew install uv`
+
+### MCP Client Setup (VS Code)
 
 ```json
 {
@@ -32,7 +40,30 @@ The $streams stream is used to look for available streams.
     }
   }
 ```
-This configuration file should work in Claude Desktop (https://modelcontextprotocol.io/quickstart/user) and VS Code (.vscode/mcp.json).
+This configuration file should work in VS Code (.vscode/mcp.json).
+
+### MCP Client Setup (Claude)
+
+```json
+{
+    "mcpServers": {
+      "KurrentDB": {
+        "type": "stdio",
+        "command": "uv",
+            "args": [
+                "--directory",
+                "path to mcp-server folder",
+                "run",
+                "server.py"
+            ],
+	    "env": {
+             "KURRENTDB_CONNECTION_STRING": "insert kurrentdb connection here"
+        }
+      }
+    }
+  }
+```
+This configuration file should work in Claude Desktop (https://modelcontextprotocol.io/quickstart/user).
 
 ### MCP Client Setup (Cursor or Windsurf)
 

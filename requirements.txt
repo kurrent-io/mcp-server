@@ -1,0 +1,2 @@
+kurrentdbclient>=1.0.6
+fastmcp>=2.12.3
