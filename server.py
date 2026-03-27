@@ -25,15 +25,27 @@ async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> s
         limit: is the number of events to return.
     """
     try:
-        events = kdb_client.get_stream(
-            stream_name=stream,
-            resolve_links=True,
-            backwards=backwards,
-            limit=limit,
-        )
+        if stream == "$all":
+            events = kdb_client.read_all(
+                resolve_links=True,
+                backwards=backwards,
+                limit=limit,
+                filter_exclude=[r"^\$"],
+            )
+        else:
+            events = kdb_client.get_stream(
+                stream_name=stream,
+                resolve_links=True,
+                backwards=backwards,
+                limit=limit,
+            )
+        is_all = stream == "$all"
         result = "Start of stream: "
         for event in events:
-            result += "An event of type: " + event.type + " has occurred with details: " + event.data.decode(
+            result += "An event of type: " + event.type
+            if is_all:
+                result += " in stream: " + event.stream_name
+            result += " has occurred with details: " + event.data.decode(
                 "utf-8") + ". Then "
         result += " End of stream. NO FURTHER ACTION REQUIRED."
         return result
