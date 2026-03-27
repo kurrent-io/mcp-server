@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 from mcp.server.fastmcp import FastMCP
 from kurrentdbclient import KurrentDBClient, StreamState, NewEvent
@@ -9,10 +10,19 @@ mcp = FastMCP("KurrentDB", dependencies=["kurrentdbclient", "json", "os"])
 
 kdb_client = None
 
+def get_connection_string():
+    connection_string = os.environ.get("KURRENTDB_CONNECTION_STRING")
+    if connection_string:
+        return connection_string
+    connection_command = os.environ.get("KURRENTDB_CONNECTION_COMMAND")
+    if connection_command:
+        return subprocess.check_output(connection_command, shell=True, text=True).strip()
+    raise RuntimeError("Set KURRENTDB_CONNECTION_STRING or KURRENTDB_CONNECTION_COMMAND")
+
 def connect():
     global kdb_client
     if kdb_client is None:
-        kdb_client = KurrentDBClient(uri=os.environ["KURRENTDB_CONNECTION_STRING"])
+        kdb_client = KurrentDBClient(uri=get_connection_string())
 
 @mcp.tool()
 async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> str:
