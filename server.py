@@ -15,6 +15,7 @@ async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> s
 
     Args:
         stream: Input to this tool is one single word stream name that needs to be read from KurrentDB.
+        Use $all to read events from every stream.
         KurrentDB is a NoSQL database which uses streams to store data as a series of events.
         If the stream is not found then return a 404 stream not found error.
         If another error happens return a 500 error.
