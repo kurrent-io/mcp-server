@@ -30,7 +30,6 @@ async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> s
                 resolve_links=True,
                 backwards=backwards,
                 limit=limit,
-                filter_exclude=[r"^\$"],
             )
         else:
             events = kdb_client.get_stream(
