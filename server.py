@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+import sys
 from mcp.server.fastmcp import FastMCP
 from kurrentdbclient import KurrentDBClient, StreamState, NewEvent
 from kurrentdbclient.exceptions import NotFoundError
@@ -7,6 +9,20 @@ from kurrentdbclient.exceptions import NotFoundError
 mcp = FastMCP("KurrentDB", dependencies=["kurrentdbclient", "json", "os"])
 
 kdb_client = None
+
+def get_connection_string():
+    connection_string = os.environ.get("KURRENTDB_CONNECTION_STRING")
+    if connection_string:
+        return connection_string
+    connection_command = os.environ.get("KURRENTDB_CONNECTION_COMMAND")
+    if connection_command:
+        return subprocess.check_output(connection_command, shell=True, text=True).strip()
+    raise RuntimeError("Set KURRENTDB_CONNECTION_STRING or KURRENTDB_CONNECTION_COMMAND")
+
+def connect():
+    global kdb_client
+    if kdb_client is None:
+        kdb_client = KurrentDBClient(uri=get_connection_string())
 
 @mcp.tool()
 async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> str:
@@ -24,6 +40,7 @@ async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> s
 
         limit: is the number of events to return.
     """
+    connect()
     try:
         events = kdb_client.get_stream(
             stream_name=stream,
@@ -49,6 +66,7 @@ async def list_streams(limit: int = 100, read_backwards: bool = True) -> str:
         limit: number of streams to read.
         read_backwards: This is the read direction of the $streams stream. Backwards means last added first.
     """
+    connect()
     try:
         events = kdb_client.read_stream(
             stream_name="$streams",
@@ -130,6 +148,7 @@ async def create_projection(projection_name:str, code: str) -> str:
         projection_name: A string that is the name of the projection.
         code: Code generated for the projection
     """
+    connect()
     kdb_client.create_projection(
         name=projection_name,
         query=code,
@@ -143,6 +162,7 @@ async def update_projection(projection_name: str, code: str) -> str:
     """This function is called when a user wants to update a projection.
     The context is the code that the user wants to update.
     """
+    connect()
     kdb_client.update_projection(name=projection_name, query=code, emit_enabled=True)
 
 @mcp.tool()
@@ -164,6 +184,7 @@ def write_events_to_stream(stream: str, data: dict, event_type: str, metadata: d
         eventType: The type of the event to write to the stream.
         metadata: The metadata which gives additional information on the event in JSON format.
     """
+    connect()
     event = NewEvent(type=event_type, data=bytes(json.dumps(data), 'utf-8'),
                      content_type='application/json',
                      metadata=bytes(json.dumps(metadata), 'utf-8'))
@@ -181,6 +202,7 @@ def get_projections_status(projection_name: str) -> str:
     Args:
         projection_name: The name of the projection to get the status of.
     """
+    connect()
     try:
         projection = kdb_client.get_projection_statistics(name=projection_name)
         return projection.__str__()
@@ -188,8 +210,6 @@ def get_projections_status(projection_name: str) -> str:
         return "404 Projection not found: " + str(e)
 
 if __name__ == "__main__":
-    # Initialize and run the server
-    kdb_client = KurrentDBClient(
-        uri=os.environ["KURRENTDB_CONNECTION_STRING"]
-    )
+    if "--lazy" not in sys.argv:
+        connect()
     mcp.run(transport='stdio')
