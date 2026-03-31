@@ -31,6 +31,7 @@ async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> s
 
     Args:
         stream: Input to this tool is one single word stream name that needs to be read from KurrentDB.
+        Use $all to read events from every stream.
         KurrentDB is a NoSQL database which uses streams to store data as a series of events.
         If the stream is not found then return a 404 stream not found error.
         If another error happens return a 500 error.
@@ -42,15 +43,26 @@ async def read_stream(stream: str, backwards: bool =False, limit: int = 10) -> s
     """
     connect()
     try:
-        events = kdb_client.get_stream(
-            stream_name=stream,
-            resolve_links=True,
-            backwards=backwards,
-            limit=limit,
-        )
+        if stream == "$all":
+            events = kdb_client.read_all(
+                resolve_links=True,
+                backwards=backwards,
+                limit=limit,
+            )
+        else:
+            events = kdb_client.get_stream(
+                stream_name=stream,
+                resolve_links=True,
+                backwards=backwards,
+                limit=limit,
+            )
+        is_all = stream == "$all"
         result = "Start of stream: "
         for event in events:
-            result += "An event of type: " + event.type + " has occurred with details: " + event.data.decode(
+            result += "An event of type: " + event.type
+            if is_all:
+                result += " in stream: " + event.stream_name
+            result += " has occurred with details: " + event.data.decode(
                 "utf-8") + ". Then "
         result += " End of stream. NO FURTHER ACTION REQUIRED."
         return result
